@@ -1,7 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cmath>
 
+// Basically no functionality, but for practice getting used to .wav formats 
 // Format: http://soundfile.sapp.org/doc/WaveFormat/
 
 // Riff Chunk
@@ -25,6 +27,10 @@ const int bits_per_sample = 16;
 
 const std::string subchunk2_id = "data"; 
 const std::string subchunk2_size = "----";
+
+const int duration = 2; // 2 seconds
+const int max_amplitude = 32760;
+const double frequency = 250;
 
 void write_as_bytes(std::ofstream &file, int value, int byte_size) { // write a value to a file
     file.write(reinterpret_cast<const char*>(&value), byte_size); 
@@ -57,7 +63,31 @@ int main() {
 
         wav << subchunk2_id;
         wav << subchunk2_size; 
+
+        int start_audio = wav.tellp(); // pointer to the start of the file
+
+        for(int i = 0; i < sample_rate * duration; i++){
+            // simple example: writing to a file
+            double amplitude = (double) i / (sample_rate) * max_amplitude;
+            // need to make sure amplitude changes
+            double value = sin((2 * 3.14 * i * frequency) / sample_rate);
+
+            double channel1 = amplitude * value/2;
+            double channel2 = (max_amplitude - amplitude) * value;
+
+            write_as_bytes(wav, channel1, 2);
+            write_as_bytes(wav, channel2, 2);
+        }
+
+        int end_audio = wav.tellp();
+        wav.seekp(start_audio - 4); // sends file pointer to start - 4
+        write_as_bytes(wav, end_audio - start_audio, 4);
+
+        wav.seekp(4, std::ios::beg);
+        write_as_bytes(wav, end_audio - 8, 4);
     }
+
+    wav.close();
 
     return 0; 
 }
