@@ -12,7 +12,7 @@ bool check_header(WAVheader &hdr) {
 
             if(memcmp(hdr.subchunk1_id, "fmt ", 4)) {
 
-                if(hdr.subchunk1_id == 16) {
+                if(hdr.subchunk1_size == 16) {
 
                     if(memcmp(hdr.subchunk2_id, "data", 4)) {
                         // now process other stuff
